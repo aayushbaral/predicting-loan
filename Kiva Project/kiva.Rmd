@@ -101,8 +101,7 @@ md - 1.96*sd
 
 ```{r}
 library("Bolstad")
-a = bayes.t.test(x = ) 
-plot(a)
+
 bayes.t.test(x = updated_data1$amount, y = updated_data2$amount)
 
 ```
