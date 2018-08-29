@@ -1,0 +1,118 @@
+---
+title: "Kiva Dataset"
+author: "Aayush"
+date: "5/17/2018"
+output: html_document
+---
+
+
+
+```{r}
+library(ggplot2)
+data <- read.csv(file="/Users/aayushbaral/Desktop/KIVA.DHS.csv", header=TRUE, sep=",")
+#Using subset function
+
+data1 <- subset(data, Nightlights_Composite < -5000, select = c(Nightlights_Composite, amount))
+data2 <-  subset(data, Nightlights_Composite > -5000, select = c(Nightlights_Composite, amount))
+amount <- data$amount
+amount
+ggplot(data1, aes(x = data1$Nightlights_Composite, y=data1$amount)) + geom_point()
+
+ggplot(data2, aes(x = (data2$Nightlights_Composite), y=data2$amount)) + geom_point() + geom_smooth() + labs(x = "Night Light Composites", y = "Loan amount lended")
+
+```
+
+```{r}
+
+updated_data1 <- subset(data2, Nightlights_Composite < 3.54,  select = c(Nightlights_Composite, amount))
+ggplot(updated_data1, aes(x = updated_data1$Nightlights_Composite, y=updated_data1$amount)) + geom_point()
+updated_data2 <- subset(data2, Nightlights_Composite > 3.54,  select = c(Nightlights_Composite, amount))
+ggplot(updated_data2, aes(x = updated_data2$Nightlights_Composite, y=updated_data2$amount)) + geom_point()
+
+```
+
+```{r}
+#So, the variances are unknown.We will be using flat prior for both of our distributions
+updated1_len = length(updated_data1$amount)
+updated2_len = length(updated_data2$amount)
+
+firstmean = mean(updated_data1$amount)
+second_mean = mean(updated_data2$amount)
+sum = 0
+for (j in 1:updated1_len){
+  sum <- sum + (updated_data1$amount[j] - firstmean)**2
+  
+}
+sum2 = 0
+for (k in 1:updated2_len){
+  sum2 <- sum2 + (updated_data2$amount[k] - second_mean) ** 2
+}
+
+sigma1sq <- (1/(updated1_len-1))* sum
+sigma2sq <- (1/(updated2_len-1)) * sum2
+sigma1sq
+sigma2sq
+
+```
+
+```{r}
+sigmaonebyn1 = sigma1sq/updated1_len
+sigmatwobyn2 = sigma2sq/updated2_len
+sumsquares = (sigmaonebyn1 + sigmatwobyn2) ** 2
+sumsquares
+addsigs = ((sigmaonebyn1)**2)/(updated1_len + 1) 
+addsigs
+secondadd = ((sigmatwobyn2)**2)/(updated2_len + 1)
+dof = sumsquares/(addsigs + secondadd)
+```
+
+```{r}
+#We would be using Bayesian flat prior for both of our distribution
+#For the first group
+post_variance  = (sigma1sq * 1)/(sigma1sq + updated1_len * 1)
+post_mean = (updated1_len/sigma1sq)/(updated1_len/(sigma1sq) + (1/1)) * firstmean
+
+post_mean
+```
+
+```{r}
+#For the second group
+post_variance2 = (sigma2sq * 1)/(sigma2sq + updated2_len * 1)
+post_mean2 = (updated2_len/sigma2sq)/(updated2_len/(sigma2sq) + (1/1)) * second_mean
+post_mean2
+```
+
+```{r}
+#Difference between the means and the variance
+md = post_mean - post_mean2
+sd = post_variance2 + post_variance
+sd
+md 
+
+```
+
+```{r}
+#Credible interval
+md + 1.96* sd
+md - 1.96*sd
+#So, the 95% credible interval for difference between means is (-3.90, 3.93)
+```
+
+
+```{r}
+library("Bolstad")
+a = bayes.t.test(x = ) 
+plot(a)
+bayes.t.test(x = updated_data1$amount, y = updated_data2$amount)
+
+```
+
+
+
+
+```
+
+```{r}
+a = bayes.lin.reg(data2$amount, data2$Nightlights_Composite)
+
+```
